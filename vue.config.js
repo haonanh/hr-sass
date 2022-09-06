@@ -30,6 +30,18 @@ module.exports = {
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: {
+    // 配置反向代理              正向代理就是代理客户端，反向代理就是代理服务器。正向代理客户需要配置，反向代理客户无感知
+    proxy: {
+      // 当我们本地的请求内含有/api时，就会触发代理机制
+      '/api': {
+        target: 'http://ihrm.itheima.net/', // 要代理的目标服务器地址
+        changeOrigin: true // 是否跨域
+        // 路径重写，去除请求地址中的/api
+        // pathRewrite:{
+        //   '^/api':''
+        // }
+      }
+    },
     port: port,
     open: true,
     overlay: {
