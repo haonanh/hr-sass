@@ -1,9 +1,10 @@
 import { setToken, getToken, removeToken } from '@/utils/auth'
-import { login } from '@/api/user'
+import { login, getUserInfo } from '@/api/user'
 // vuex管理token，实现token的持久化
 // vuex内token的值与本地存储同步更新
 const state = {
-  token: getToken() // 初始化vuex时，从本地缓存获取token
+  token: getToken(), // 初始化vuex时，从本地缓存获取token
+  userInfo: {}
 }
 const mutations = {
   setToken(state, token) {
@@ -13,6 +14,15 @@ const mutations = {
   removeToken(state) {
     state.token = null // 删除vuex的token值
     removeToken() // 同步移除本次储存内的token，实现vuex和本地缓存同步
+  },
+  // 设置用户信息的方法
+  setUserInfo(state, result) {
+    state.userInfo = result // 这是响应式
+    // state.userInfo = { ...result } 浅拷贝的方式，这也是响应式
+  },
+  // 删除用户信息的方法
+  removeUserInfo() {
+    state.userInfo = {}
   }
 }
 const actions = {
@@ -22,7 +32,14 @@ const actions = {
     const result = await login(data)
     // if (result.data.success) // 不需要在判断是否成功，在响应拦截器内已经做了处理
     context.commit('setToken', result) // 就调用mutations内的方法来修改state内的token值并且缓存到本地
+  },
+  // 定义一个方法为getUserInfo
+  async getUserInfo(context) {
+    const result = await getUserInfo() // 获取用户基本信息
+    context.commit('setUserInfo', result) // 将用户基本信息设置到state内的userInfo
+    return result // 后期需要使用
   }
+
 }
 
 export default {

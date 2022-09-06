@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
+import store from '@/store'
 // 创建一个axios实例
 const service = axios.create({
   // npm run dev ==> .env.development ==> VUE_APP_BASE_API = '/api'  开发环境
@@ -8,7 +9,15 @@ const service = axios.create({
   timeout: 5000 // 超时时间
 })
 // axios请求拦截器
-service.interceptors.request.use()
+service.interceptors.request.use(config => {
+//   console.log(config)
+  if (store.getters.token) { // 如果token存在，那么统一在请求头内携带Authorization参数
+    config.headers.Authorization = `Bearer ${store.getters.token}`
+  }
+  return config // 必须返回配置
+}, error => {
+  return Promise.reject(error) // 直接进入catch内
+})
 // axios响应拦截器
 service.interceptors.response.use(response => {
   // axios返回的数据默认加一层data 所以response.data
