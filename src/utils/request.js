@@ -10,7 +10,7 @@ const service = axios.create({
 })
 // axios请求拦截器
 service.interceptors.request.use(config => {
-//   console.log(config)
+  console.log(config)
   if (store.getters.token) { // 如果token存在，那么统一在请求头内携带Authorization参数
     config.headers.Authorization = `Bearer ${store.getters.token}`
   }

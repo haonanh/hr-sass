@@ -14,10 +14,17 @@ export function login(data) {
 export function getUserInfo() {
   return request({
     url: '/sys/profile',
-    methodL: 'post'
+    method: 'POST'
   })
 }
 
+// 获取员工基本信息接口（为了获取用户头像）
+export function getUserDetailById(id) {
+  return request({
+    url: `/sys/user/${id}`,
+    method: 'get'
+  })
+}
 export function logout() {
 
 }

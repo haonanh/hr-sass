@@ -11,12 +11,15 @@ import 'nprogress/nprogress.css' // 引入进度条样式
 // next（false）不跳转
 // next（地址）跳转到指定地址
 const whiteList = ['/login', '/404']
-router.beforeEach((to, from, next) => {
+router.beforeEach(async(to, from, next) => {
   nProgress.start() // 开启进度条
   if (store.getters.token) { // 判断是否有token
     if (to.path === '/login') { // 有token 去往路径为登录页 则直接跳转到首页
       next('/')
     } else { // 有token 去往路径不为登录页 则直接跳转对应路径
+      if (!store.getters.id) { // 当vuex内用户基本信息没有时，通过actions方法调用接口获取数据
+        await store.dispatch('user/getUserInfo') // await是为了同步执行代码，获取完数据并保存在vuex内后，在放行
+      }
       next()
     }
   } else { // 无token值
