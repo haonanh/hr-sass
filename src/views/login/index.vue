@@ -57,7 +57,7 @@
 
 <script>
 import { validMobile } from '@/utils/validate'
-
+import { mapActions } from 'vuex'
 export default {
   name: 'Login',
   data() {
@@ -96,6 +96,8 @@ export default {
     }
   },
   methods: {
+    ...mapActions('user', ['login']),
+    // ...mapActions(['user/login']),
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''
@@ -107,18 +109,20 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
+      // 表单主动校验
+      this.$refs.loginForm.validate(async isOk => {
+        // 参数为回调函数，回调函数内有两个参数，一个为是否校验成功，一个为未通过校验的字段
+        if (isOk) { // 如果校验成功执行里面代码
+          try {
+            this.loading = true
+            // await下面的代码为成功后执行的代码
+            await this.login(this.loginForm) // 调用登录接口 async标记的函数实际也是一个promise。所以actions内login方法也为一个promise对象
+            this.$router.push('/')
+          } catch (error) { // 如果响应为失败或者后端返回错误信息，那么直接执行catch内，不跳转页面
+            console.log(error)
+          } finally { // 无论失败或者成功都执行finally内的代码
             this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
+          }
         }
       })
     }

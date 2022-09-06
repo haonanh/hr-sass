@@ -34,7 +34,7 @@ module.exports = {
     proxy: {
       // 当我们本地的请求内含有/api时，就会触发代理机制
       '/api': {
-        target: 'http://ihrm.itheima.net/', // 要代理的目标服务器地址
+        target: 'http://ihrm.itheima.net', // 要代理的目标服务器地址
         changeOrigin: true // 是否跨域
         // 路径重写，去除请求地址中的/api
         // pathRewrite:{
