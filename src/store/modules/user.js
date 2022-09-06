@@ -40,6 +40,11 @@ const actions = {
     // 将用户基本信息和员工资料合并保存到state内userInfo内   展开运算符重复的属性后面会重叠前面的
     context.commit('setUserInfo', { ...result, ...baseInfo }) // 将用户基本信息设置到state内的userInfo
     return result // 后期需要使用
+  },
+  // 退出登录的方法
+  logout(context) {
+    context.commit('removeToken') // 清除state内token的值并且清除本地缓存
+    context.commit('removeUserInfo') // 清除state内保存的用户个人信息
   }
 
 }

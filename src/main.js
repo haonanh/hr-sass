@@ -15,6 +15,13 @@ import router from './router'
 import '@/icons' // icon
 import '@/permission' // permission control
 
+import * as directives from '@/directives' // 将directives文件内所有的导出都导入，并保存在directives对象内 （directives名字可以随便写，不是固定的）
+console.log(directives)
+// Object对象的静态方法  Object.keys() 返回对象内所有属性名的一个数组
+Object.keys(directives).forEach(key => {
+  Vue.directive(key, directives[key]) // 通过forEach，给所有的自定义指令注册
+})
+
 // set ElementUI lang to EN
 Vue.use(ElementUI, { locale })
 // 如果想要中文版 element-ui，按如下方式声明
