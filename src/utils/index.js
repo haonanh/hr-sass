@@ -115,3 +115,19 @@ export function param2Obj(url) {
   })
   return obj
 }
+// 递归算法
+// 将列表型的数据转化成树形数据
+// 也就是将普通的数组对象结构转化成树形数对象结构
+export function changeListToTreeData(list, rootValue) {
+  const arr = []
+  list.forEach(item => {
+    if (item.pid === rootValue) {
+      const children = changeListToTreeData(list, item.id) // 规律，子节点内的pid属性等于父节点的id属性，利用这点来寻找父节点的子节点
+      if (children.length > 0) { // children 也是一个数组对象类型 因为调用changeListToTreeData（）必定返回一个[{}]
+        item.children = children // item是一个对象，在对象内添加一个children属性。即item结构为 { id:  ,  name:  , children:[{}] }
+      }
+      arr.push(item) // 把item追加到数组内。 即[ { id:  ,  name:  , children:[{}] } ]  此时已经是树形数组对象结构了，以此类推。无论有多少层级，多少个。都可以变成这种结构
+    } // 如果没有子节点，也就是children.length=0。那么直接追加item。 arr为 [ { id:   , name:   , code: } ]
+  })
+  return arr // 返回给changeListToTreeData(list, rootValue)
+} // [ { id:  ,  name:  , children:[{}] } ,{ id:   , name:   , code:   } ,{   }]
