@@ -1,4 +1,4 @@
-import { setToken, getToken, removeToken } from '@/utils/auth'
+import { setToken, getToken, removeToken, setTimestamp } from '@/utils/auth'
 import { login, getUserInfo, getUserDetailById } from '@/api/user'
 // vuex管理token，实现token的持久化
 // vuex内token的值与本地存储同步更新
@@ -32,6 +32,8 @@ const actions = {
     const result = await login(data)
     // if (result.data.success) // 不需要在判断是否成功，在响应拦截器内已经做了处理
     context.commit('setToken', result) // 就调用mutations内的方法来修改state内的token值并且缓存到本地
+    // 登录成功后才获取了token，此时存入获取token时的时间戳
+    setTimestamp()
   },
   // 定义一个方法为getUserInfo
   async getUserInfo(context) {
