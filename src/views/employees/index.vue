@@ -9,7 +9,7 @@
         <template v-slot:after>
           <el-button size="small" type="success">导入excel</el-button>
           <el-button size="small" type="danger">导出excel</el-button>
-          <el-button size="small" type="primary">新增员工</el-button>
+          <el-button size="small" type="primary" @click="showDialog=true">新增员工</el-button>
         </template>
       </page-tools>
       <!-- 表格内容和分页 -->
@@ -29,13 +29,13 @@
             <el-switch :v-model="false" />
           </el-table-column>
           <el-table-column label="操作" sortable="" fixed="right" width="280">
-            <template>
+            <template v-slot="{row}">
               <el-button type="text" size="small">查看</el-button>
               <el-button type="text" size="small">转正</el-button>
               <el-button type="text" size="small">调岗</el-button>
               <el-button type="text" size="small">离职</el-button>
               <el-button type="text" size="small">角色</el-button>
-              <el-button type="text" size="small">删除</el-button>
+              <el-button type="text" size="small" @click="deleteEmployee(row.id)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -48,16 +48,20 @@
             @current-change="pageChange"
           /> <!--分页中layout设置不能错一个标点。不然什么都不会显示 -->
         </el-row>
-
+        <add-employee :show-dialog.sync="showDialog" /> <!-- sync修饰符，之后在子组件内改变showDialog的值时，不需要特意传值通知父组件，自动同步 -->
       </el-card>
     </div>
   </div>
 </template>
 
 <script>
-import { getEmployeeList } from '@/api/employees'
+import { getEmployeeList, delEmployee } from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees'
+import AddEmployee from './components/add-employee.vue'
 export default {
+  components: {
+    AddEmployee
+  },
   data() {
     return {
       page: {
@@ -66,7 +70,8 @@ export default {
         total: 0 // 总数
       },
       list: [], // 承接后台返回的员工列表的数据
-      loading: false // 加载状态，false为加载中
+      loading: false, // 加载状态，false为加载中
+      showDialog: false // 控制新增员工弹层是否显示
     }
   },
   created() {
@@ -91,6 +96,17 @@ export default {
     // column为列的属性对象  cellValue则是单元格的值，该单元格为1或2   index为索引
       const obj = EmployeeEnum.hireType.find(item => item.id === cellValue) // 如果可以找到匹配的会返回一个对象，如果未找到则返回undefined
       return obj ? obj.value : '未知'
+    },
+    // 点击事件--删除员工
+    async deleteEmployee(id) {
+      try {
+        await this.$confirm('您确认删除该员工吗') // $confirm是提示框，返回的是一个promise对象可以用.then和.catch也可以用async和await来处理确认和取消
+        await delEmployee(id)
+        this.getEmployeeList()
+        this.$message.success('删除成功')
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }
