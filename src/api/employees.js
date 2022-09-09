@@ -7,3 +7,12 @@ export function getEmployeeSimple() {
     method: 'get'
   })
 }
+
+// 获取员工列表接口
+export function getEmployeeList(params) {
+  return request({
+    url: '/sys/user',
+    method: 'get',
+    params
+  })
+}

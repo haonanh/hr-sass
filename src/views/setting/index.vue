@@ -6,7 +6,7 @@
 
           <el-tab-pane label="角色管理">
             <el-row style="height:60px">
-              <el-button type="primary" icon="el-icon-plus" size="small">新增角色</el-button>
+              <el-button type="primary" icon="el-icon-plus" size="small" @click="showDialog=true">新增角色</el-button>
             </el-row>
             <el-table border="" :data="list">
               <el-table-column label="序号" width="120" type="index" align="center" />
@@ -54,7 +54,7 @@
         </el-tabs>
       </el-card>
     </div>
-    <el-dialog title="编辑角色" :visible="showDialog">
+    <el-dialog :title="roleForm.id?'编辑角色':'新增角色'" :visible="showDialog" @close="btnCancel"> <!-- 弹层关闭事件绑定按钮取消方法 -->
       <el-form ref="roleForm" label-width="120px" :model="roleForm" :rules="rules">
         <el-form-item label="角色名称" prop="name">
           <el-input v-model="roleForm.name" />
@@ -66,7 +66,7 @@
       <!-- 通过el-dialog组件的footer插槽 -->
       <el-row slot="footer" type="flex" justify="center">
         <el-col :span="8">
-          <el-button size="small">取消</el-button>
+          <el-button size="small" @click="btnCancel">取消</el-button>
           <el-button type="primary" size="small" @click="btnOk">确定</el-button>
         </el-col>
       </el-row>
@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import { getRoleList, getCompanyInfo, deleteRole, getRoleDetail, updateRole } from '@/api/setting'
+import { getRoleList, getCompanyInfo, deleteRole, getRoleDetail, updateRole, addRole } from '@/api/setting'
 import { mapGetters } from 'vuex'
 export default {
   data() {
@@ -148,6 +148,9 @@ export default {
         if (this.roleForm.id) {
           // 编辑模式
           await updateRole(this.roleForm)
+        } else {
+          // 新增模式
+          await addRole(this.roleForm)
         }
         this.getRoleList()
         this.$message.success('操作成功')
@@ -155,6 +158,16 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+    // 点击事件--关闭弹层，并且清空输入框内容和表单校验结果
+    btnCancel() {
+      // 将roleForm对象还原成初始化
+      this.roleForm = {
+        name: '',
+        description: ''
+      }
+      this.$refs.roleForm.resetFields() // 重置表单校验结果
+      this.showDialog = false // 关闭弹层
     }
   }
 }
