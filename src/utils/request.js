@@ -9,7 +9,7 @@ const service = axios.create({
   // npm run dev ==> .env.development ==> VUE_APP_BASE_API = '/api'  开发环境
   // npm run build ==> .env.production ==> VUE_APP_BASE_API = '/prod-api'  生产环境
   baseURL: process.env.VUE_APP_BASE_API, // axios的基础地址
-  timeout: 5000 // 超时时间
+  timeout: 10000 // 超时时间
 })
 // axios请求拦截器
 service.interceptors.request.use(config => {

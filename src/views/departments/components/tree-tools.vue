@@ -37,6 +37,7 @@
   </el-row>
 </template>
 <script>
+import { delDepartments } from '@/api/departments'
 export default {
   // 设定props变量
   // 为了外部传进来一个对象，对象内包括name和manager
@@ -62,9 +63,18 @@ export default {
   methods: {
     operateDepts(type) {
       if (type === 'add') {
+        // 新增部门-->显示新增部门弹窗并且传递当前节点对象数据
+        this.$emit('addDepts', this.treeNode)
       } else if (type === 'edit') {
+        // 编辑部门
+        this.$emit('editDepts', this.treeNode)
       } else {
-        alert('删除')
+        this.$confirm('您确定删除组织部门吗').then(() => { // 点击确认，会进入.then的回调函数
+          return delDepartments(this.treeNode.id) // axios请求本身是一个promise对象
+        }).then(() => { // 删除成功，会进入.then回调函数
+          this.$emit('delDepts') // 子传父，通过$emit触发父内的自定义事件，来获取最新的组织部门数据，铺设到页面
+          this.$message.success('已删除成功') // 提示用户删除成功
+        })
       }
     }
   }
