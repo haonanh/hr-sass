@@ -10,6 +10,8 @@
         <el-button type="primary">导出excel</el-button>
       </template>
     </PageTools>
+    <upload-excel />
+    <upload-image />
   </div>
 </template>
 

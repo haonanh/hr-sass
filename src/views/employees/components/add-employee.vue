@@ -1,7 +1,7 @@
 <template>
   <div>
-    <el-dialog :visible="showDialog" title="新增员工">
-      <el-form label-width="120px" :model="formData" :rules="rules">
+    <el-dialog :visible="showDialog" title="新增员工" @close="btnCancel">  <!-- 给el-dialog绑定关闭事件，触发btnCancel方法 -->
+      <el-form ref="addEmployee" label-width="120px" :model="formData" :rules="rules">
         <el-form-item label="姓名" prop="username">
           <el-input v-model="formData.username" placeholder="请输入姓名" style="width:50%" />
         </el-form-item>
@@ -9,7 +9,12 @@
           <el-input v-model="formData.mobile" placeholder="请输入手机号" style="width:50%" />
         </el-form-item>
         <el-form-item label="入职时间" prop="timeOfEntry">
-          <el-date-picker v-model="formData.timeOfEntry" placeholder="请选择入职时间" style="width:50%" />
+          <el-date-picker
+            v-model="formData.timeOfEntry"
+            placeholder="请选择入职时间"
+            style="width:50%"
+            value-format="yyyy-MM-dd"
+          />
         </el-form-item>
         <el-form-item label="聘用形式" prop="formOfEmployment">
           <el-select v-model="formData.formOfEmployment" placeholder="请选择聘用形式" style="width:50%">
@@ -17,8 +22,8 @@
               v-for="item in EmployeeEnum.hireType"
               :key="item.id"
               :label="item.value"
-              :value="item.value"
-            />
+              :value="item.id"
+            /> <!-- 此处label为选项显示的名字(若不设置则默认和value相同)，value为单元格的值 1或2 -->
           </el-select>
         </el-form-item>
         <el-form-item label="工号" prop="workNumber">
@@ -36,13 +41,18 @@
           />
         </el-form-item>
         <el-form-item label="转正时间" prop="correctionTime">
-          <el-date-picker v-model="formData.correctionTime" placeholder="请选择转正时间" style="width:50%" />
+          <el-date-picker
+            v-model="formData.correctionTime"
+            placeholder="请选择转正时间"
+            style="width:50%"
+            value-format="yyyy-MM-dd"
+          />
         </el-form-item>
       </el-form>
       <el-row slot="footer" type="flex" justify="center">
         <el-col :span="6">
-          <el-button size="small">取消</el-button>
-          <el-button type="primary" size="small">确认</el-button>
+          <el-button size="small" @click="btnCancel">取消</el-button>
+          <el-button type="primary" size="small" @click="btnOk">确认</el-button>
         </el-col>
       </el-row>
     </el-dialog>
@@ -52,6 +62,7 @@
 import { getDepartments } from '@/api/departments' // 引入获取部门列表接口
 import { changeListToTreeData } from '@/utils' // 引入将部门列表数据转化为树形结构的方法
 import EmployeeEnum from '@/api/constant/employees'
+import { addEmployee } from '@/api/employees'
 export default {
   props: {
     showDialog: {
@@ -66,7 +77,7 @@ export default {
       formData: {
         username: '',
         mobile: '',
-        formOfEmployment: '',
+        formOfEmployment: null,
         workNumber: '',
         departmentName: '',
         timeOfEntry: '',
@@ -75,7 +86,7 @@ export default {
       // 定义表单各项的校验规则
       rules: {
         username: [{ required: true, message: '用户姓名不能为空', trigger: 'blur' }, {
-          min: 1, max: 4, message: '用户姓名为1-4位'
+          min: 1, max: 4, message: '用户姓名为1-4位', trigger: 'blur'
         }],
         mobile: [{ required: true, message: '手机号不能为空', trigger: 'blur' }, {
           pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur'
@@ -115,6 +126,36 @@ export default {
     selectNode(node) {
       this.formData.departmentName = node.name
       this.showTree = false
+    },
+    // 点击事件--点击确认按钮，调用新增员工接口
+    async btnOk() {
+      try { // 通过try，catch方法来捕获async和await可能出现的异常
+        await this.$refs.addEmployee.validate() // 不传入回调函数，返回一个promise对象
+        await addEmployee(this.formData) // 调用新增员工，更新后台数据
+        // this.$parent 可以获取到父组件的实例，从而调用里面的属性和方法
+        // 但是子组件不能被另一个组件包含着
+        this.$parent.getEmployeeList() // 重新获取员工列表数据，更新前端页面
+        this.$parent.showDialog = false // 关闭弹层
+        // 由于点击确认关闭弹层触发了close事件从而触发btnCancel方法，这里就不要清空数据和重置校验了
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    // 点击事件--点击取消按钮。清空输入框，并且重置表单的所有校验结果，关闭弹层
+    btnCancel() {
+      // 清空输入框
+      this.formData = {
+        username: '',
+        mobile: '',
+        formOfEmployment: '',
+        workNumber: '',
+        departmentName: '',
+        timeOfEntry: '',
+        correctionTime: ''
+      }
+      this.$refs.addEmployee.resetFields() // 重置校验结果，和清空对应数据
+      this.showTree = false
+      this.$emit('update:showDialog', false) // 关闭弹层
     }
   }
 }
