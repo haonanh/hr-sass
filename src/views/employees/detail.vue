@@ -24,12 +24,27 @@
           </el-tab-pane>
           <el-tab-pane label="个人详情">
             <!-- 放置内容 -->
+            <!-- 打印按钮 -->
+            <el-row type="flex" justify="end">
+              <el-tooltip content="打印个人基本信息">
+                <router-link :to="`/employees/print/${userId}?type=personal`">
+                  <i class="el-icon-printer" />
+                </router-link>
+              </el-tooltip>
+            </el-row>
             <!-- 动态组件： 使用内置的component标签 配合is属性 is属性绑定变量名，变量的值为注册组件名即可-->
             <component :is="UserComponent" />
             <!--  <user-info></user-info> 两者相同  -->
           </el-tab-pane>
           <el-tab-pane label="岗位信息">
             <!-- 放置内容 -->
+            <el-row type="flex" justify="end">
+              <el-tooltip content="打印岗位信息">
+                <router-link :to="`/employees/print/${userId}?type=job`">
+                  <i class="el-icon-printer" />
+                </router-link>
+              </el-tooltip>
+            </el-row>
             <!-- 用动态组件和直接使用注册组件都可以 -->
             <job-info />
           </el-tab-pane>

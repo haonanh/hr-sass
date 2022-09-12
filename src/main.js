@@ -17,6 +17,9 @@ import '@/permission' // permission control
 
 import PageTools from '@/components' // 将公共组件导入到入口文件内，使用Vue.use注册
 import * as directives from '@/directives' // 将directives文件内所有的导出都导入，并保存在directives对象内 （directives名字可以随便写，不是固定的）
+
+import Print from 'vue-print-nb'
+Vue.use(Print)
 // import * as filters from './filters'
 console.log(directives)
 // Object对象的静态方法  Object.keys() 返回对象内所有属性名的一个数组

@@ -17,6 +17,17 @@
         <el-table border="" :data="list"><!-- table 通过data属性绑定list数组对象数据 -->
           <el-table-column label="序号" sortable="" type="index" />
           <el-table-column label="姓名" sortable="" prop="username" />
+          <el-table-column label="头像" prop="staffPhoto">
+            <template v-slot="{row}">
+              <img
+                v-imgerror="require('@/assets/common/bigUserHeader.png')"
+                :src="row.staffPhoto"
+                alt=""
+                style="border-radius: 50%; width: 100px; height: 100px; padding: 10px"
+                @click="showCode(row.staffPhoto)"
+              > <!-- 自定义指令，防止图片异常时，图片裂开。或者图片出现空白的情况。一旦出现上述情况都会用默认的图片地址替代 -->
+            </template>
+          </el-table-column>
           <el-table-column label="手机号" sortable="" prop="mobile" />
           <el-table-column label="工号" sortable="" prop="workNumber" />
           <el-table-column label="聘用形式" sortable="" prop="formOfEmployment" :formatter="formatEmployment" /><!-- formatter属性 值类型为函数，用来格式化内容 -->
@@ -52,14 +63,21 @@
       </el-card>
       <add-employee :show-dialog.sync="showDialog" /> <!-- sync修饰符，之后在子组件内改变showDialog的值时，不需要特意传值通知父组件，自动同步 -->
     </div>
+    <!-- sync同步修饰符，showCodeDialog为data变量，可以直接使用 -->
+    <el-dialog :visible.sync="showCodeDialog" title="二维码">
+      <el-row type="flex" justify="center">
+        <canvas ref="myCanvas" />
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getEmployeeList, delEmployee } from '@/api/employees'
-import EmployeeEnum from '@/api/constant/employees'
-import AddEmployee from './components/add-employee.vue'
-import { formatDate } from '@/filters'
+import { getEmployeeList, delEmployee } from '@/api/employees' // 引入接口
+import EmployeeEnum from '@/api/constant/employees' // 引入枚举对象
+import AddEmployee from './components/add-employee.vue' // 引入增加员工组件
+import { formatDate } from '@/filters' // 引入格式化时间方法
+import QrCode from 'qrcode' // 引入QrCode对象，用来将对应信息转化成二维码
 export default {
   components: {
     AddEmployee
@@ -73,7 +91,8 @@ export default {
       },
       list: [], // 承接后台返回的员工列表的数据
       loading: false, // 加载状态，false为加载中
-      showDialog: false // 控制新增员工弹层是否显示
+      showDialog: false, // 控制新增员工弹层是否显示
+      showCodeDialog: false // 控制二维码的弹层
     }
   },
   created() {
@@ -161,6 +180,19 @@ export default {
           return item[headers[key]] // map返回一个新数组['13912345678','张三','行政部'.....]
         })
       })
+    },
+    // 点击事件--控制二维码弹层，并显示二维码
+    showCode(url) {
+      if (url) {
+        this.showCodeDialog = true
+        // 由于更新DOM是异步的，弹层出现时，还不能立马获取到dom元素，需要使用this.$nextTick方法
+        this.$nextTick(() => {
+          // QrCode.toCanvas(dom,info) dom为转化的二维码放置的dom元素，info为想要转化成二维码的信息，如果是url地址，那么扫描二维码会跳转到该地址，如果不是地址就会显示内容
+          QrCode.toCanvas(this.$refs.myCanvas, url)
+        })
+      } else {
+        this.$message.warning('该用户还未上传头像')
+      }
     }
   }
 }

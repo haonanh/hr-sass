@@ -19,5 +19,12 @@ export default { // 员工管理页
     meta: {
       title: '员工详情' // 标记当前路由规则的中文名称 后续在做左侧菜单时 使用
     }
+  }, {
+    path: 'print/:id', // 传递对应的用户id进去，加上? 表示可传可不传
+    hidden: true,
+    component: () => import('@/views/employees/print'),
+    meta: {
+      title: '员工打印'
+    }
   }]
 }

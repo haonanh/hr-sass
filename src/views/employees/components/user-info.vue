@@ -58,7 +58,7 @@
         <el-col :span="12">
           <el-form-item label="员工头像">
             <!-- 放置上传图片 -->
-
+            <upload-image ref="staffPhoto" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -87,9 +87,9 @@
         </el-form-item>
         <!-- 个人头像 -->
         <!-- 员工照片 -->
-
         <el-form-item label="员工照片">
           <!-- 放置上传图片 -->
+          <upload-image ref="myStaffPhoto" />
         </el-form-item>
         <el-form-item label="国家/地区">
           <el-select v-model="formData.nationalArea" class="inputW2">
@@ -370,22 +370,42 @@ export default {
     // 封装获取员工简单信息接口方法
     async getUserDetailById() {
       this.userInfo = await getUserDetailById(this.userId)
+      if (this.userInfo.staffPhoto && this.userInfo.staffPhoto.trim()) { // 加上判断，staffPhoto去除空格后，不为空串。 防止将空格字符串保存给fileList的url
+        this.$refs.staffPhoto.fileList = [{ url: this.userInfo.staffPhoto, upLoad: true }] // 该url地址是从后台返回的数据中拿回来的，所以已经上传成功，给upLoad：true
+      }
     },
     // 点击事件--保存用户简单信息
     saveUser() {
       // 表单校验姓名为1-4位
+      const fileList = this.$refs.staffPhoto.fileList
+      if (fileList.some(item => !item.upLoad)) {
+        // 如果fileList数组内item对象不存在upLoad属性，那么表示没有上传成功，会执行这里的代码
+        this.$message.warning('图片还未上传成功')
+        return
+      }
       this.$refs.userInfo.validate().then(async() => {
-        await saveUserDetailById(this.userInfo)
+        await saveUserDetailById({ ...this.userInfo, staffPhoto: fileList.length ? fileList[0].url : ' ' }) // 此处如果fileList不存在，那么给后台传过去的url地址必须为带空格的字符串' '
         this.$message.success('保存成功')
       })
     },
     // 封装获取员工详细信息接口方法
     async getPersonalDetail() {
       this.formData = await getPersonalDetail(this.userId)
+      if (this.formData.staffPhoto && this.formData.staffPhoto.trim()) { // 加上判断，staffPhoto去除空格后，不为空串。 防止将空格字符串保存给fileList的url
+        // 通过$refs获取组件实例，从而可以获取调用组件内的所有方法和变量。将后台返回的地址修改fileList内的url，也就显示出图片了
+        this.$refs.myStaffPhoto.fileList = [{ url: this.formData.staffPhoto, upLoad: true }]
+      }
     },
     // 点击事件-保存用户详细信息
     async savePersonal() {
-      await updatePersonal(this.formData)
+      const fileList = this.$refs.myStaffPhoto.fileList
+      if (fileList.some(item => !item.upLoad)) {
+        // 如果fileList数组内item对象不存在upLoad属性，那么表示没有上传成功，会执行这里的代码
+        this.$message.warning('图片还未上传成功')
+        return
+      }
+      // 通过展开运算符，将staffPhoto的url地址替换成上传到腾讯云返回的地址
+      await updatePersonal({ ...this.formData, staffPhoto: fileList.length ? fileList[0].url : ' ' })
       this.$message.success('保存成功')
     }
   }
