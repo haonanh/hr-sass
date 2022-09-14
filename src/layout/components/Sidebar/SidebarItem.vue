@@ -3,7 +3,11 @@
     <template v-if="hasOneShowingChild(item.children,item) && (!onlyOneChild.children||onlyOneChild.noShowingChildren)&&!item.alwaysShow">
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
-          <item :icon="onlyOneChild.meta.icon||(item.meta&&item.meta.icon)" :title="onlyOneChild.meta.title" />
+          <item
+            :icon="onlyOneChild.meta.icon||(item.meta&&item.meta.icon)"
+            :title="$t('route.'+onlyOneChild.name)"
+          /><!-- onlyOneChild.name是指每个路由规则内的name属性 -->
+          <!-- 左侧菜单栏的名称是通过这里获取的，利用全局i18n对象中t方法来获取对应语言包的配置，在组件内通过$t() -->
         </el-menu-item>
       </app-link>
     </template>

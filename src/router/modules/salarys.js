@@ -1,16 +1,56 @@
-import Layout from '@/layout' // 引入Layout组件
 
-// 每个子模块 其实 都是外层是layout  组件位于layout的二级路由里面
-export default {
-  path: '/salarys', // 一级路由employees
-  name: 'salarys', // 给路由规则命名employees，后期做权限管理需要用
-  component: Layout, // 显示Layout布局
-  children: [{ // 二级路由
-    path: '', // 此处不用写任何路径，表示二级默认路由。当进入employees路径时，会显示Layout组件和员工主页组件
-    component: () => import('@/views/salarys'),
-    meta: { // 元信息
-      title: '工资', // 此处必须用title，因为侧边栏菜单的名称就是读取的meta对象内title的属性
-      icon: 'money'
+import Layout from '@/layout'
+
+const salaryRouter = {
+  path: '/salarys',
+  component: Layout,
+  name: 'salarys',
+  children: [
+    {
+      path: '',
+      component: () => import('@/views/salarys'),
+      name: 'salarys',
+      meta: {
+        title: '工资',
+        icon: 'money'
+      }
+    },
+    {
+      path: 'setting',
+      component: () => import('@/views/salarys/setting'),
+      name: 'salarysSetting',
+      hidden: true,
+      meta: {
+        title: '设置'
+      }
+    },
+    {
+      path: 'details/:yearMonth/:id',
+      component: () => import('@/views/salarys/detail'),
+      name: 'salarysDetails',
+      hidden: true,
+      meta: {
+        title: '详情'
+      }
+    },
+    {
+      path: 'historicalArchiving',
+      component: () => import('@/views/salarys/historical'),
+      name: 'salarysHistorical',
+      hidden: true,
+      meta: {
+        title: '历史归档'
+      }
+    },
+    {
+      path: 'monthStatement',
+      component: () => import('@/views/salarys/month'),
+      name: 'salarysMonthStatement',
+      hidden: true,
+      meta: {
+        title: '月报表'
+      }
     }
-  }]
+  ]
 }
+export default salaryRouter

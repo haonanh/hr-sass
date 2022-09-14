@@ -4,7 +4,8 @@ import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-import locale from 'element-ui/lib/locale/lang/en' // lang i18n
+// import locale from 'element-ui/lib/locale/lang/en' // lang i18n
+import i18n from '@/lang'
 
 import '@/styles/index.scss' // global css
 
@@ -17,6 +18,9 @@ import '@/permission' // permission control
 
 import PageTools from '@/components' // 将公共组件导入到入口文件内，使用Vue.use注册
 import * as directives from '@/directives' // 将directives文件内所有的导出都导入，并保存在directives对象内 （directives名字可以随便写，不是固定的）
+
+import checkPermission from '@/mixin/checkPermission' // 引入检查权限点方法的对象
+Vue.mixin(checkPermission) // 全局混入检查对象 表示所有的组件都拥有了检查权限点的方法,可以随意使用
 
 import Print from 'vue-print-nb'
 Vue.use(Print)
@@ -34,7 +38,12 @@ Object.keys(directives).forEach(key => {
 // })
 
 // set ElementUI lang to EN
-Vue.use(ElementUI, { locale })
+// Vue.use(ElementUI, { locale })
+
+Vue.use(ElementUI,
+  // element 本身支持i18n的处理
+  // i18n会根据当前的locale属性，去配置对应的语言包  locale属性为zh 就是中文包  为en  就是英文包
+  { i18n: (key, value) => i18n.t(key) }) // i18n.t()方法，是i18n自带的，会去对应的语言包找对应的内容  (这里是配置ElementUI的各个组件中的语言)
 // 如果想要中文版 element-ui，按如下方式声明
 // Vue.use(ElementUI)
 Vue.use(PageTools)
@@ -44,5 +53,6 @@ new Vue({
   el: '#app',
   router,
   store,
+  i18n,
   render: h => h(App)
 })

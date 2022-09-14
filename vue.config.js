@@ -15,6 +15,37 @@ const name = defaultSettings.title || 'vue Admin Template' // page title
 // port = 9528 npm run dev OR npm run dev --port = 9528
 const port = process.env.port || process.env.npm_config_port || 9528 // dev port
 
+let externals = {}
+let cdn = {
+  css: [],
+  js: []
+}
+// 通过环境变量 来区分是否使用cdn
+const isProd = process.env.NODE_ENV === 'production' // 开发环境不需要排除包和使用cdn  只有生产环境才需要
+if (isProd) {
+  // 如果是生产环境 就排除打包 否则不排除
+  externals = {
+    // externals首先会排除掉 定义的包名,空出来的位置  会用全局变量名来替换
+    'element-ui': 'ELEMENT', // （value值）后面的名字不能随便起 应该是 js中的全局对象名
+    'vue': 'VUE', // 应该是 js中的全局对象名
+    'xlsx': 'XLSX' // 应该是 js中的全局对象名
+  }
+  cdn = {
+    css: [
+      // element-ui css
+      'https://unpkg.com/element-ui/lib/theme-chalk/index.css' // 样式表
+    ],
+    js: [
+      // vue must at first!  先有vue，后有element-ui
+      'https://unpkg.com/vue/dist/vue.js', // vuejs
+      // element-ui js
+      'https://unpkg.com/element-ui/lib/index.js', // elementUI
+      'https://cdn.jsdelivr.net/npm/xlsx@0.16.6/dist/jszip.min.js',
+      'https://cdn.jsdelivr.net/npm/xlsx@0.16.6/dist/xlsx.full.min.js'
+    ]
+  }
+}
+
 // All configuration item explanations can be find in https://cli.vuejs.org/config/
 module.exports = {
   /**
@@ -49,6 +80,7 @@ module.exports = {
       errors: true
     }
   },
+  // 配置webpack
   configureWebpack: {
     // provide the app's title in webpack's name field, so that
     // it can be accessed in index.html to inject the correct title.
@@ -57,7 +89,13 @@ module.exports = {
       alias: {
         '@': resolve('src')
       }
-    }
+    },
+    // externals排除
+    // 要排除的包名
+    // key(是要排除的包名): value(实际上是实际引入的包的全局的变量名 )
+    // 因为要排除element-ui 所以后面要引入CDN文件 CDN文件中有ELEMENTUI的全局变量名
+    externals: externals
+
   },
   chainWebpack(config) {
     // it can improve the speed of the first screen, it is recommended to turn on preload

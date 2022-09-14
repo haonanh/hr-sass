@@ -18,9 +18,20 @@ router.beforeEach(async(to, from, next) => {
       next('/')
     } else { // 有token 去往路径不为登录页 则直接跳转对应路径
       if (!store.getters.id) { // 当vuex内用户基本信息没有时，通过actions方法调用接口获取数据
-        await store.dispatch('user/getUserInfo') // await是为了同步执行代码，获取完数据并保存在vuex内后，在放行
+        // async修饰的函数，是一个异步函数，需要通过await来获取返回的值
+        // 并且actions内的函数默认是Promise对象  调用这个对象 想要获取返回的值话 必须 加 await或者是then
+        const { roles } = await store.dispatch('user/getUserInfo') // await是为了同步执行代码，获取完数据并保存在vuex内后，在放行
+        // 当获取完用户信息后，根据menus数组筛选出用户对应的动态路由并加到路由表内
+        const routes = await store.dispatch('permission/filterRoutes', roles.menus)
+
+        // 将404的路由规则放在动态路由规则的最后面，这样才能保证404路由页面在整个路由规则的最后
+        router.addRoutes([...routes, { path: '*', redirect: '/404', hidden: true }]) // router.addRoutes()方法，将动态路由添加到路由表中。  这种方法是将想要的路由添加到现有路由表中
+        // 此处必须用next(to.path)不能直接使用next()  这是一个已知的缺陷
+        // next(to.path)相当于多跳转一次 原因：直接使用next()会报错，因为此时新添加的路由还没铺到路由表内，需要使用next(to.path)多跳转一次，跳转前路由才会铺设好
+        next(to.path)
+      } else {
+        next()
       }
-      next()
     }
   } else { // 无token值
     // whiteList.some(item=>item===to.path)

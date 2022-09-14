@@ -6,7 +6,7 @@
 
           <el-tab-pane label="角色管理">
             <el-row style="height:60px">
-              <el-button type="primary" icon="el-icon-plus" size="small" @click="showDialog=true">新增角色</el-button>
+              <el-button v-if="checkPermission(&quot;add-roles&quot;)" type="primary" icon="el-icon-plus" size="small" @click="showDialog=true">新增角色</el-button>
             </el-row>
             <el-table border="" :data="list">
               <el-table-column label="序号" width="120" type="index" align="center" />
@@ -15,7 +15,7 @@
               <el-table-column label="操作">
                 <template slot-scope="{row}"> <!-- 作用域插槽，可以获取row的数据 -->
                   <!-- row内的数据就是对应行中 {id,name,description} 的数据 -->
-                  <el-button type="success" size="small">分配权限</el-button>
+                  <el-button :disabled="!checkPermission('assign')" type="success" size="small" @click="assignPerm(row.id)">分配权限</el-button>
                   <el-button type="primary" size="small" @click="editRole(row.id)">编辑</el-button>
                   <el-button type="danger" size="small" @click="deleteRole(row.id)">删除</el-button><!-- 从而通过row.id获取对应角色id -->
                 </template>
@@ -71,11 +71,31 @@
         </el-col>
       </el-row>
     </el-dialog>
+    <el-dialog :visible="showPermDialog" title="分配权限" @close="btnPermCancel">
+      <el-tree
+        ref="permTree"
+        :data="permData"
+        :props="defaultProps"
+        :default-expand-all="true"
+        :show-checkbox="true"
+        :check-strictly="true"
+        node-key="id"
+        :default-checked-keys="selectCheck"
+      /> <!--default-expand-all:默认全部展开  show-checkbox：展示可选框  check-strictly：是否严格的遵循父子不互相关联 node-key：每个节点用来做唯一标识的属性 default-checked-keys：默认勾选的节点的key的数组 即每个节点的node-key值组成的数组-->
+      <el-row slot="footer" type="flex" justify="center">
+        <el-col :span="6">
+          <el-button type="primary" size="small" @click="btnPermOK">确认</el-button>
+          <el-button size="small" @click="btnPermCancel">取消</el-button>
+        </el-col>
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getRoleList, getCompanyInfo, deleteRole, getRoleDetail, updateRole, addRole } from '@/api/setting'
+import { getRoleList, getCompanyInfo, deleteRole, getRoleDetail, updateRole, addRole, assignPerm } from '@/api/setting'
+import { getPermissionList } from '@/api/permission' // 引入获取权限列表的接口
+import { changeListToTreeData } from '@/utils' // 引入将普通数组对象转化成树形结构数据的方法
 import { mapGetters } from 'vuex'
 export default {
   data() {
@@ -93,9 +113,16 @@ export default {
         name: '',
         description: ''
       },
-      rules: {
+      rules: { // 校验规则
         name: [{ required: true, message: '角色名称不能为空', trigger: 'blur' }]
-      }
+      },
+      showPermDialog: false, // 控制分配权限弹层
+      permData: [], // 树形结构，权限列表数据
+      defaultProps: { // 要显示字段的属性
+        label: 'name'
+      },
+      roleId: null, // 存储角色id，为了后面给对应角色分配相应的权限
+      selectCheck: [] // 对应角色已拥有的权限点数组
     }
   },
   computed: {
@@ -168,6 +195,26 @@ export default {
       }
       this.$refs.roleForm.resetFields() // 重置表单校验结果
       this.showDialog = false // 关闭弹层
+    },
+    // 点击事件--分配权限
+    async assignPerm(id) {
+      this.roleId = id // 保存角色id
+      this.permData = changeListToTreeData(await getPermissionList(), '0') // 转换成树形结构所需的数据
+      const { permIds } = await getRoleDetail(id) // 获取对应角色的权限点数组
+      this.selectCheck = permIds // 保存权限点数组
+      this.showPermDialog = true // 打开弹层
+    },
+    // 点击事件--分配权限中确认按钮
+    async btnPermOK() {
+      // 调用角色分配权限接口 通过调用el-tree自身的方法getCheckedKeys，返回获得目前被选中的节点的 key 所组成的数组也就是权限点Id组成的数组
+      await assignPerm({ permIds: this.$refs.permTree.getCheckedKeys(), id: this.roleId })
+      this.$message.success('分配权限成功')
+      this.showPermDialog = false
+    },
+    // 点击事件--分配权限中取消按钮
+    btnPermCancel() {
+      this.selectCheck = [] // 重置selectCheck数组为空 如果不请空，下次点击分配权限进入弹层，由于获取permIds是异步的，所以会将上一次的selectCheck数组直接加载到页面上，导致用户实际权限点勾选和页面显示权限点勾选不匹配
+      this.showPermDialog = false
     }
   }
 }

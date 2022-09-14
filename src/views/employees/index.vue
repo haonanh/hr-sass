@@ -9,7 +9,7 @@
         <template v-slot:after>
           <el-button size="small" type="success" @click="$router.push('/import')">导入excel</el-button>
           <el-button size="small" type="danger" @click="exportData">导出excel</el-button>
-          <el-button size="small" type="primary" @click="showDialog=true">新增员工</el-button>
+          <el-button v-if="checkPermission('aa')" size="small" type="primary" @click="showDialog=true">新增员工</el-button>
         </template>
       </page-tools>
       <!-- 表格内容和分页 -->
@@ -46,7 +46,7 @@
               <el-button type="text" size="small">转正</el-button>
               <el-button type="text" size="small">调岗</el-button>
               <el-button type="text" size="small">离职</el-button>
-              <el-button type="text" size="small">角色</el-button>
+              <el-button type="text" size="small" @click="editRole(row.id)">角色</el-button>
               <el-button type="text" size="small" @click="deleteEmployee(row.id)">删除</el-button>
             </template>
           </el-table-column>
@@ -69,6 +69,7 @@
         <canvas ref="myCanvas" />
       </el-row>
     </el-dialog>
+    <assign-role ref="assignRole" :show-role-dialog.sync="showRoleDialog" :user-id="userId" />
   </div>
 </template>
 
@@ -78,9 +79,11 @@ import EmployeeEnum from '@/api/constant/employees' // 引入枚举对象
 import AddEmployee from './components/add-employee.vue' // 引入增加员工组件
 import { formatDate } from '@/filters' // 引入格式化时间方法
 import QrCode from 'qrcode' // 引入QrCode对象，用来将对应信息转化成二维码
+import AssignRole from './components/assign-role.vue'
 export default {
   components: {
-    AddEmployee
+    AddEmployee,
+    AssignRole
   },
   data() {
     return {
@@ -92,7 +95,9 @@ export default {
       list: [], // 承接后台返回的员工列表的数据
       loading: false, // 加载状态，false为加载中
       showDialog: false, // 控制新增员工弹层是否显示
-      showCodeDialog: false // 控制二维码的弹层
+      showCodeDialog: false, // 控制二维码的弹层
+      showRoleDialog: false, // 控制分配角色弹层
+      userId: '' // 分配角色需要的员工id
     }
   },
   created() {
@@ -193,6 +198,12 @@ export default {
       } else {
         this.$message.warning('该用户还未上传头像')
       }
+    },
+    // 点击事件--编辑角色信息
+    async editRole(id) {
+      this.userId = id // 将员工id 传给子组件
+      await this.$refs.assignRole.getUserDetailById(id) // 为了等对应员工的角色信息获取完毕再弹出弹层，所以加上async和await，使其变成同步
+      this.showRoleDialog = true
     }
   }
 }

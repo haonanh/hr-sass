@@ -28,11 +28,14 @@ export default {
   components: { SidebarItem, Logo },
   computed: {
     ...mapGetters([
-      'sidebar'
+      'sidebar',
+      'routes'
     ]),
-    routes() {
-      return this.$router.options.routes
-    },
+    // 此处this.$router.options.routes只能获取到默认的路由规则，也就是静态路由规则，不能响应式更新数据，也就是新添加的路由规则并不能获取到
+    // 所以需要获取到储存在vuex中permission模块下的routes，来循环显示菜单栏
+    // routes() {
+    //   return this.$router.options.routes
+    // },
     activeMenu() {
       const route = this.$route
       const { meta, path } = route

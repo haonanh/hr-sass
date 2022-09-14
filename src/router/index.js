@@ -9,6 +9,7 @@ import attendancesRouter from './modules/attendances'
 import salarysRouter from './modules/salarys'
 import settingRouter from './modules/setting'
 import socialRouter from './modules/social'
+import userRouter from './modules/user'
 
 Vue.use(Router)
 
@@ -58,7 +59,7 @@ export const constantRoutes = [
     redirect: '/dashboard',
     children: [{
       path: 'dashboard',
-      name: 'Dashboard',
+      name: 'dashboard',
       component: () => import('@/views/dashboard/index'),
       meta: { title: '首页', icon: 'dashboard' }
     }]
@@ -72,9 +73,9 @@ export const constantRoutes = [
       component: () => import('@/views/import')
     }]
   },
-
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  // 首页内跳转我的信息
+  userRouter
+  // 此处的404页面的路由规则放置到了动态路由规则的最后面，以免动态路由在没有addRoutes之前，找不到对应的地址，就会显示404
 ]
 
 // 动态路由 需要权限才能访问
@@ -90,14 +91,16 @@ export const asyncRoutes = [
 ]
 
 const createRouter = () => new Router({
-  // mode: 'history', // require service support
+  mode: 'history', // require service support 将路由模式变成history模式，url地址不再显示 #   如果打包上线，就需要处理/后面的内容
+  base: 'hrsaas', // 配置前缀地址
   scrollBehavior: () => ({ y: 0 }),
-  routes: [...constantRoutes, ...asyncRoutes]
+  routes: [...constantRoutes]
 })
 
 const router = createRouter()
 
 // Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
+// 该方法是重置路由规则为初始化时，即只有静态路由规则
 export function resetRouter() {
   const newRouter = createRouter()
   router.matcher = newRouter.matcher // reset router
