@@ -5,11 +5,11 @@
 <script>
 // 按需引入echarts模块--雷达图 减少打包的体积
 import * as echarts from 'echarts/core'
-import { TitleComponent, LegendComponent } from 'echarts/components'
+import { TitleComponent, LegendComponent, TooltipComponent } from 'echarts/components'
 import { RadarChart } from 'echarts/charts'
 import { CanvasRenderer } from 'echarts/renderers'
 
-echarts.use([TitleComponent, LegendComponent, RadarChart, CanvasRenderer])
+echarts.use([TitleComponent, LegendComponent, TooltipComponent, RadarChart, CanvasRenderer])
 export default {
   data() {
     return {
@@ -22,6 +22,9 @@ export default {
     myChart.setOption({
       title: {
         text: '个人雷达图'
+      },
+      tooltip: {
+        show: true
       },
       legend: {
         data: ['Allocated Budget', 'Actual Spending']

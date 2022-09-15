@@ -26,20 +26,20 @@ if (isProd) {
   // 如果是生产环境 就排除打包 否则不排除
   externals = {
     // externals首先会排除掉 定义的包名,空出来的位置  会用全局变量名来替换
+    'vue': 'Vue', // 应该是 js中的全局对象名
     'element-ui': 'ELEMENT', // （value值）后面的名字不能随便起 应该是 js中的全局对象名
-    'vue': 'VUE', // 应该是 js中的全局对象名
     'xlsx': 'XLSX' // 应该是 js中的全局对象名
   }
   cdn = {
     css: [
       // element-ui css
-      'https://unpkg.com/element-ui/lib/theme-chalk/index.css' // 样式表
+      'https://cdn.jsdelivr.net/npm/element-ui@2.13.2/lib/theme-chalk/index.css' // 样式表
     ],
     js: [
       // vue must at first!  先有vue，后有element-ui
-      'https://unpkg.com/vue/dist/vue.js', // vuejs
+      'https://unpkg.com/vue@2.6.10/dist/vue.js', // vuejs
       // element-ui js
-      'https://unpkg.com/element-ui/lib/index.js', // elementUI
+      'https://cdn.jsdelivr.net/npm/element-ui@2.13.2/lib/index.js', // elementUI
       'https://cdn.jsdelivr.net/npm/xlsx@0.16.6/dist/jszip.min.js',
       'https://cdn.jsdelivr.net/npm/xlsx@0.16.6/dist/xlsx.full.min.js'
     ]
@@ -108,6 +108,13 @@ module.exports = {
         include: 'initial'
       }
     ])
+
+    // 通过 `html-webpack-plugin`注入到 `index.html`之中
+    // 将cdn注入
+    config.plugin('html').tap((args) => {
+      args[0].cdn = cdn
+      return args
+    })
 
     // when there are many pages, it will cause too many meaningless requests
     config.plugins.delete('prefetch')
